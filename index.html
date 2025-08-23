@@ -79,6 +79,8 @@
     const gridLayer = new Konva.Layer();
     const layer = new Konva.Layer();
     let currentNode = null;
+    let isEditingText = false;
+
     stage.add(gridLayer);
     stage.add(layer);
 
@@ -208,6 +210,7 @@
     };
 
     function enableTextEdit(textNode){
+      isEditingText = true;
       const textPosition = textNode.absolutePosition();
       const stageBox = stage.container().getBoundingClientRect();
       const area = document.createElement('textarea');
@@ -228,6 +231,7 @@
       function finish(){
         textNode.text(area.value);
         area.remove();
+        isEditingText = false;
         layer.draw();
       }
       area.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); finish(); } });
@@ -311,7 +315,7 @@
     // --- Keyboard shortcuts ---
     window.addEventListener('keydown', (e)=>{
       const node = tr.nodes()[0];
-      if (e.key === 'Delete' || e.key === 'Backspace') { if(node){ node.destroy(); selectNode(null);} }
+      if (e.key === 'Delete' || ( e.key === 'Backspace' && !isEditingText ) ) { if(node){ node.destroy(); selectNode(null);} }
       if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='d'){ e.preventDefault(); document.getElementById('duplicate').click(); }
       if (!node) return;
       const step = e.shiftKey ? 10 : 1;
