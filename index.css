@@ -1,0 +1,30 @@
+    .tool-btn {
+      width: 40px;
+      height: 40px;
+      margin: 8px 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .tool-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .tool-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Active tool highlight */
+    .tool-btn.active {
+      background: rgba(255,255,255,0.25);
+    }
