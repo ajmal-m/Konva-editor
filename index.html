@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konva Canvas Editor — Drag, Resize, Export</title>
+  <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+  <style>
+    :root { --bg:#0b1020; --panel:#0e162b; --muted:#9aa4b2; }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 800px at 10% 10%, #0f172a, #0b1020 70%, #070b17 100%);color:#e5e7eb;font-family:system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial}
+    .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(10,16,32,.7);border-bottom:1px solid #1f2937;backdrop-filter:blur(6px)}
+    .group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .btn,.input,.select{background:#0b1220;color:#e5e7eb;border:1px solid #1f2937;border-radius:10px;padding:8px 10px;font-weight:600;cursor:pointer}
+    .btn:hover,.input:hover,.select:hover{border-color:#334155}
+    .btn:active{transform:translateY(1px)}
+    .btn[disabled]{opacity:.5;cursor:not-allowed}
+    .input[type="color"]{padding:0;width:40px;height:36px}
+    #stage-wrap{position:relative;height:calc(100vh - 70px)}
+    #container{width:100%;height:100%}
+    .hint{position:absolute;right:10px;bottom:10px;font-size:12px;color:#93c5fd;background:rgba(2,6,23,.6);padding:6px 10px;border-radius:10px;border:1px solid #172554}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="toolbar">
+      <div class="group">
+        <span class="label">Add</span>
+        <button class="btn" id="add-rect">Rect</button>
+        <button class="btn" id="add-circle">Circle</button>
+        <button class="btn" id="add-star">Star</button>
+        <button class="btn" id="add-arrow">Arrow</button>
+        <button class="btn" id="add-text">Text</button>
+      </div>
+      <div class="group">
+        <span class="label">Style</span>
+        <span class="label">Fill</span><input class="input" type="color" id="fill" value="#22d3ee" />
+        <span class="label">Stroke</span><input class="input" type="color" id="stroke" value="#ffffff" />
+        <span class="label">Width</span><input class="input" type="number" id="strokeWidth" min="0" max="20" value="2" style="width:72px" />
+        <span class="label">Radius</span><input class="input" type="number" id="cornerRadius" min="0" max="20" value="2" style="width:72px" />
+        <label class="label" style="display:flex;gap:6px;align-items:center"><input id="snap" type="checkbox" /> Snap</label>
+        <label class="label" style="display:flex;gap:6px;align-items:center"><input id="grid" type="checkbox" checked/> Grid</label>
+      </div>
+      <div class="group">
+        <button class="btn" id="bring-front">Bring Front</button>
+        <button class="btn" id="send-back">Send Back</button>
+        <button class="btn" id="duplicate">Duplicate</button>
+        <button class="btn" id="remove">Delete</button>
+        <button class="btn" id="export">Export PNG</button>
+        <button class="btn" id="clear">Clear</button>
+      </div>
+    </div>
+
+    <div id="stage-wrap">
+      <div id="container"></div>
+      <div class="hint">Click to select • Drag to move • Resize via handles • Delete ⌫ • Duplicate Ctrl/Cmd+D • Arrows to nudge • Shift+Arrows ×10</div>
+    </div>
+  </div>
+
+  <script>
+    // --- Stage & layers ---
+    const stage = new Konva.Stage({ container: 'container', width: window.innerWidth, height: window.innerHeight - 70 });
+    const gridLayer = new Konva.Layer();
+    const layer = new Konva.Layer();
+    stage.add(gridLayer);
+    stage.add(layer);
+
+    // --- Grid drawing ---
+    const GRID_SIZE = 20;
+    function drawGrid() {
+      gridLayer.destroyChildren();
+      const w = stage.width();
+      const h = stage.height();
+      for (let x = 0; x < w; x += GRID_SIZE) {
+        gridLayer.add(new Konva.Line({ points: [x,0,x,h], stroke: 'rgba(148,163,184,0.15)', strokeWidth: 1 }));
+      }
+      for (let y = 0; y < h; y += GRID_SIZE) {
+        gridLayer.add(new Konva.Line({ points: [0,y,w,y], stroke: 'rgba(148,163,184,0.15)', strokeWidth: 1 }));
+      }
+      gridLayer.cache();
+      gridLayer.draw();
+    }
+    drawGrid();
+
+    // --- Transformer ---
+    const tr = new Konva.Transformer({ rotateEnabled: true, enabledAnchors: ['top-left','top-right','bottom-left','bottom-right','middle-left','middle-right','top-center','bottom-center'] });
+    layer.add(tr);
+
+    function selectNode(node) {
+      debugger
+      if (!node) { tr.nodes([]); layer.draw(); return; }
+      tr.nodes([node]);
+      layer.draw();
+      syncUIFromNode(node);
+    }
+
+    // --- Helpers ---
+    const ui = {
+      fill: document.getElementById('fill'),
+      stroke: document.getElementById('stroke'),
+      strokeWidth: document.getElementById('strokeWidth'),
+      cornerRadius: document.getElementById('cornerRadius'),
+      snap: document.getElementById('snap'),
+      grid: document.getElementById('grid')
+    };
+
+    function applyStyle(node){
+      if (!node) return;
+      if ('fill' in node.attrs) node.fill(ui.fill.value);
+      if ('stroke' in node.attrs) node.stroke(ui.stroke.value);
+      if ('strokeWidth' in node.attrs) node.strokeWidth(parseFloat(ui.strokeWidth.value)||0);
+      if ('cornerRadius' in node.attrs) node.cornerRadius(parseFloat(ui.cornerRadius.value)||0);
+      layer.batchDraw();
+    }
+
+    function syncUIFromNode(node){
+      if (!node) return;
+      if ('fill' in node.attrs && typeof node.fill() === 'string') ui.fill.value = toHex(node.fill());
+      if ('stroke' in node.attrs && typeof node.stroke() === 'string') ui.stroke.value = toHex(node.stroke());
+      if ('strokeWidth' in node.attrs) ui.strokeWidth.value = node.strokeWidth() || 0;
+    }
+
+    function toHex(color){
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.fillStyle = color; // browser normalizes
+      const computed = ctx.fillStyle; // rgb(a) or hex
+      if (computed.startsWith('#')) return computed;
+      const m = computed.match(/\d+/g).map(Number);
+      return '#' + m.slice(0,3).map(n => n.toString(16).padStart(2,'0')).join('');
+    }
+
+    function commonShapeProps(){
+      return { fill: ui.fill.value, stroke: ui.stroke.value, strokeWidth: parseFloat(ui.strokeWidth.value)||0, draggable: true, name: 'shape' };
+    }
+
+    function attachNodeEvents(node){
+      node.on('click', (e)=>{ selectNode(node); e.cancelBubble = true; });
+      node.on('dragmove', ()=>{ if (ui.snap.checked) snapToGrid(node); });
+      node.on('transformend', ()=>{ if (ui.snap.checked) snapToGrid(node); });
+    }
+
+    function snapToGrid(node){
+      const gx = Math.round(node.x()/GRID_SIZE)*GRID_SIZE;
+      const gy = Math.round(node.y()/GRID_SIZE)*GRID_SIZE;
+      node.position({x: gx, y: gy});
+      layer.batchDraw();
+    }
+
+    // --- Add shapes ---
+    document.getElementById('add-rect').onclick = ()=>{
+      const rect = new Konva.Rect({ x: 80, y: 80, width: 160, height: 100, cornerRadius: 0, ...commonShapeProps() });
+      layer.add(rect); attachNodeEvents(rect); selectNode(rect);
+    };
+
+    document.getElementById('add-circle').onclick = ()=>{
+      const circle = new Konva.Circle({ x: 280, y: 160, radius: 60, ...commonShapeProps() });
+      layer.add(circle); attachNodeEvents(circle); selectNode(circle);
+    };
+
+    document.getElementById('add-star').onclick = ()=>{
+      const star = new Konva.Star({ x: 420, y: 160, numPoints: 5, innerRadius: 30, outerRadius: 60, ...commonShapeProps() });
+      layer.add(star); attachNodeEvents(star); selectNode(star);
+    };
+
+    document.getElementById('add-arrow').onclick = ()=>{
+      const arrow = new Konva.Arrow({ points:[520,120,640,180], pointerLength: 12, pointerWidth: 12, tension: 0, lineCap:'round', lineJoin:'round', ...commonShapeProps() });
+      layer.add(arrow); attachNodeEvents(arrow); selectNode(arrow);
+    };
+
+    document.getElementById('add-text').onclick = ()=>{
+      const text = new Konva.Text({ x: 120, y: 260, text: 'Double-click to edit', fontSize: 22, fontFamily: 'Inter, system-ui, sans-serif', ...commonShapeProps() });
+      text.on('dblclick dbltap', () => { enableTextEdit(text); });
+      layer.add(text); attachNodeEvents(text); selectNode(text);
+    };
+
+    function enableTextEdit(textNode){
+      const textPosition = textNode.absolutePosition();
+      const stageBox = stage.container().getBoundingClientRect();
+      const area = document.createElement('textarea');
+      document.body.appendChild(area);
+      area.value = textNode.text();
+      area.style.position = 'absolute';
+      area.style.top = stageBox.top + textPosition.y + 'px';
+      area.style.left = stageBox.left + textPosition.x + 'px';
+      area.style.width = textNode.width() + 'px';
+      area.style.border = '1px solid #3b82f6';
+      area.style.background = '#0b1220';
+      area.style.color = '#e5e7eb';
+      area.style.padding = '4px 6px';
+      area.style.borderRadius = '6px';
+      area.style.zIndex = 1000;
+      area.focus();
+
+      function finish(){
+        textNode.text(area.value);
+        area.remove();
+        layer.draw();
+      }
+      area.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); finish(); } });
+      area.addEventListener('blur', finish);
+    }
+
+    // --- Stage events ---
+    stage.on('click', (e)=>{ if (e.target === stage) selectNode(null); });
+
+    // --- Toolbar actions ---
+    document.getElementById('remove').onclick = ()=>{
+      const node = tr.nodes()[0];
+      if (node){ node.destroy(); selectNode(null); }
+    };
+
+    document.getElementById('duplicate').onclick = ()=>{
+      const node = tr.nodes()[0];
+      if (!node) return;
+      const clone = node.clone({ x: node.x()+20, y: node.y()+20 });
+      layer.add(clone); attachNodeEvents(clone); selectNode(clone);
+    };
+
+    document.getElementById('bring-front').onclick = ()=>{
+      const node = tr.nodes()[0];
+      if (node){ node.moveToTop(); layer.draw(); }
+    };
+    document.getElementById('send-back').onclick = ()=>{
+      const node = tr.nodes()[0];
+      if (node){ node.moveToBottom(); layer.draw(); }
+    };
+
+    document.getElementById('export').onclick = ()=>{
+      const url = stage.toDataURL({ pixelRatio: 2 });
+      const a = document.createElement('a'); a.href = url; a.download = 'canvas-editor.png'; a.click();
+    };
+
+    document.getElementById('clear').onclick = ()=>{
+      layer.find('.shape').forEach(n => n.destroy());
+      selectNode(null); layer.draw();
+    };
+
+    // style inputs apply to selected
+    ui.fill.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    ui.stroke.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    ui.strokeWidth.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    ui.cornerRadius.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+
+
+    // grid toggle
+    ui.grid.addEventListener('change', ()=>{ gridLayer.visible(ui.grid.checked); gridLayer.draw(); });
+
+    // --- Keyboard shortcuts ---
+    window.addEventListener('keydown', (e)=>{
+      const node = tr.nodes()[0];
+      if (e.key === 'Delete' || e.key === 'Backspace') { if(node){ node.destroy(); selectNode(null);} }
+      if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='d'){ e.preventDefault(); document.getElementById('duplicate').click(); }
+      if (!node) return;
+      const step = e.shiftKey ? 10 : 1;
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+        e.preventDefault();
+        const pos = node.position();
+        if (e.key==='ArrowUp') pos.y -= step;
+        if (e.key==='ArrowDown') pos.y += step;
+        if (e.key==='ArrowLeft') pos.x -= step;
+        if (e.key==='ArrowRight') pos.x += step;
+        node.position(pos); layer.batchDraw();
+      }
+    });
+
+    // --- Resize handling ---
+    function fitStage(){
+      const h = window.innerHeight - 70;
+      stage.size({ width: window.innerWidth, height: h });
+      drawGrid();
+    }
+    window.addEventListener('resize', fitStage);
+
+    fitStage();
+  </script>
+</body>
+</html>
