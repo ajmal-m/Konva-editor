@@ -40,6 +40,8 @@
         <span class="label">Stroke</span><input class="input" type="color" id="stroke" value="#ffffff" />
         <span class="label">Width</span><input class="input" type="number" id="strokeWidth" min="0" max="20" value="2" style="width:72px" />
         <span class="label">Radius</span><input class="input" type="number" id="cornerRadius" min="0" max="20" value="2" style="width:72px" />
+        <span class="label">Blur</span><input class="input" type="range" id="blurRadius" min="0" max="40" value="0" style="width:72px" />
+        <span class="label">Image Upload</span><input class="input" type="file" id="imageUpload" accept="image/*" />
         <label class="label" style="display:flex;gap:6px;align-items:center"><input id="snap" type="checkbox" /> Snap</label>
         <label class="label" style="display:flex;gap:6px;align-items:center"><input id="grid" type="checkbox" checked/> Grid</label>
       </div>
@@ -103,7 +105,9 @@
       strokeWidth: document.getElementById('strokeWidth'),
       cornerRadius: document.getElementById('cornerRadius'),
       snap: document.getElementById('snap'),
-      grid: document.getElementById('grid')
+      grid: document.getElementById('grid'),
+      imageUpload: document.getElementById('imageUpload'),
+      blurRadius: document.getElementById('blurRadius')
     };
 
     function applyStyle(node){
@@ -242,6 +246,35 @@
     ui.stroke.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
     ui.strokeWidth.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
     ui.cornerRadius.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+
+    // Image upload Change
+    ui.imageUpload.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        const img = new Image();
+        img.onload = function(){
+          const konvaImage = new Konva.Image({ x: 100, y: 100, image: img, width: img.width, height: img.height, ...commonShapeProps() });
+          konvaImage.cache();
+          konvaImage.filters([Konva.Filters.Blur]);
+          konvaImage.blurRadius(0); 
+          layer.add(konvaImage); attachNodeEvents(konvaImage); selectNode(konvaImage);
+          ui.imageUpload.value = '';
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Add Blur Event for Image
+    ui.blurRadius.addEventListener('input', ()=> {
+      const node = tr.nodes()[0];
+      if (node && node.className === 'Image') {
+        node.blurRadius(parseFloat(ui.blurRadius.value) || 0);
+        layer.batchDraw();
+      }
+    });
 
 
     // grid toggle
