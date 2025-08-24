@@ -1,41 +1,7 @@
-cornerRadius
-: 
-0
-draggable
-: 
-true
-fill
-: 
-"red"
-height
-: 
-100
-name
-: 
-"shape"
-stroke
-: 
-"black"
-strokeWidth
-: 
-0
-width
-: 
-160
-x
-: 
-80
-y
-: 
-80
-
- <div style="margin-bottom: 16px;">
-          <h3  class="text-14 poppins-medium prop-heading">Transform</h3>
-          <label class="prop-label">X <input type="number" id="prop-x" class="prop-input"></label>
-          <label class="prop-label">Y <input type="number" id="prop-y" class="prop-input"></label>
-          <label class="prop-label">Width <input type="number" id="prop-width" class="prop-input"></label>
-          <label class="prop-label">Height <input type="number" id="prop-height" class="prop-input"></label>
-          <label class="prop-label">Rotation <input type="number" id="prop-rotation" class="prop-input"></label>
-          <label class="prop-label">SkewX <input type="number" id="prop-skewx" class="prop-input"></label>
-          <label class="prop-label">SkewY <input type="number" id="prop-skewy" class="prop-input"></label>
-        </div>
+<div style="margin-bottom: 16px;">
+          <h3 class="text-14 poppins-medium prop-heading">Style</h3>
+          <label class="prop-label">Fill <input type="color" id="prop-fill" class="prop-input"></label>
+          <label class="prop-label">Stroke <input type="color" id="prop-stroke" class="prop-input"></label>
+          <label class="prop-label">Stroke Width <input type="number" id="prop-stroke-width" class="prop-input"></label>
+          <label class="prop-label">Opacity <input type="range" min="0" max="1" step="0.05" id="prop-opacity" class="prop-input"></label>
+        </div> 

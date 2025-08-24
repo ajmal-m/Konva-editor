@@ -144,13 +144,15 @@
     let isEditingText = false;
     let copiedNode = null;
     let contextMenuLocation = { x: 0, y: 0 };
+    let propertyScrollTop = 0;
 
     const DEFAULT_PROPERTIES={
       'transform':{
-        x: 0, y: 0, width: 100, height: 100, rotation: 0, skewX: 0, skewY: 0, scaleX: 1, scaleY: 1, strokeWidth: 0
+        x: 0, y: 0, width: 100, height: 100, rotation: 0, skewX: 0, skewY: 0, scaleX: 1, scaleY: 1,
+        cornerRadius:0
       },
       'style':{
-        fill: 'red', stroke: 'black', strokeWidth: 0, opacity: 1
+        fill: '#fff4e8', stroke: '#fc0008', strokeWidth: 0, opacity: 1
       },
       'text':{
         fontSize: 20
@@ -206,7 +208,8 @@
       grid: document.getElementById('grid'),
       imageUpload: document.getElementById('imageUpload'),
       blurRadius: document.getElementById('blurRadius'),
-      contextMenu: document.getElementById('contextMenu')
+      contextMenu: document.getElementById('contextMenu'),
+      propertyPanel:document.getElementById('properties-drawer')
     };
 
 
@@ -293,6 +296,8 @@
       // node.on('dragmove', ()=>{ if (ui.snap.checked) snapToGrid(node); });
       // node.on('transformend', ()=>{ if (ui.snap.checked) snapToGrid(node); });
       node.on('transformend', (e) => {
+        propertyScrollTop = document.getElementById("properties-drawer").scrollTop || 0;
+        debugger
         removePropertyPanel();
         createPropertyPanel(node.attrs);
       });
@@ -327,7 +332,7 @@
         inputElement.name=label;
         inputElement.value = properties?.[label] ? parseFloat(properties?.[label]).toFixed(0) : DEFAULT_PROPERTIES['transform'][label];
 
-        inputElement.addEventListener('change', (e) => {
+        inputElement.addEventListener('input', (e) => {
           updateNodeStyle(tr.nodes()[0], e.target.name, e.target.value);
         });
         labelElement.appendChild(document.createTextNode(label));
@@ -336,6 +341,46 @@
       };
       
       for(let key in  DEFAULT_PROPERTIES['transform']){
+        createInput(key, `prop-${key}`);
+      }
+
+      container.appendChild(section);
+    }
+
+    // Create style properties section
+    function createStylePropertySection( container, properties = DEFAULT_PROPERTIES['style']){
+      const section = document.createElement('div');
+      section.style = 'margin-bottom: 16px;';
+      const heading = document.createElement('h3');
+      heading.classList.add('text-14', 'poppins-medium', 'prop-heading');
+      heading.textContent = 'Style';
+      section.appendChild(heading);
+
+      // Create input fields for style properties
+      const createInput = (label, id) => {
+        const labelElement = document.createElement('label');
+        const inputElement = document.createElement('input');
+        labelElement.classList.add('prop-label');
+        inputElement.classList.add('prop-input');
+        inputElement.id = id;
+        inputElement.type = label === 'opacity' ? 'range' : label === "strokeWidth" ? 'number' : 'color';
+        if(label === 'opacity'){
+          inputElement.min = 0;
+          inputElement.max = 1;
+          inputElement.step = 0.05;
+        }
+        inputElement.name=label;
+        inputElement.value = properties?.[label] || DEFAULT_PROPERTIES['style'][label];
+
+        inputElement.addEventListener('input', (e) => {
+          updateNodeStyle(tr.nodes()[0], e.target.name, e.target.value);
+        });
+        labelElement.appendChild(document.createTextNode(label));
+        labelElement.appendChild(inputElement);
+        section.appendChild(labelElement);
+      };
+
+      for(let key in  DEFAULT_PROPERTIES['style']){
         createInput(key, `prop-${key}`);
       }
 
@@ -352,8 +397,10 @@
       heading.textContent = 'Properties';
       propContainer.appendChild(heading);
       createTransformSection(propContainer, attrs);
+      createStylePropertySection(propContainer, attrs);
 
       stage.appendChild(propContainer);
+      propContainer.scrollTop = propertyScrollTop;
     }
 
     function removePropertyPanel(){
