@@ -6,11 +6,14 @@
   <title>Konva Canvas Editor — Drag, Resize, Export</title>
   <script src="https://unpkg.com/konva@9/konva.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+  </style>
+  <style>
     :root { --bg:#0b1020; --panel:#0e162b; --muted:#9aa4b2; }
     *{box-sizing:border-box}
     body{margin:0;background:radial-gradient(1200px 800px at 10% 10%, #0f172a, #0b1020 70%, #070b17 100%);color:#e5e7eb;font-family:system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial}
     .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
-    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(10,16,32,.7);border-bottom:1px solid #1f2937;backdrop-filter:blur(6px)}
+    .toolbar{display:flex;height: 50px;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(10,16,32,.7);border-bottom:1px solid #1f2937;backdrop-filter:blur(6px)}
     .group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
     .btn,.input,.select{background:#0b1220;color:#e5e7eb;border:1px solid #1f2937;border-radius:10px;padding:8px 10px;font-weight:600;cursor:pointer}
@@ -23,6 +26,7 @@
     .hint{position:absolute;right:10px;bottom:10px;font-size:12px;color:#93c5fd;background:rgba(2,6,23,.6);padding:6px 10px;border-radius:10px;border:1px solid #172554}
   </style>
   <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="font.css">
 </head>
 <body>
   <div class="app">
@@ -46,7 +50,7 @@
           <svg viewBox="0 0 24 24"><path d="M4 6h16M12 6v12"/></svg>
         </button>
       </div>
-      <div class="group">
+      <!-- <div class="group">
         <span class="label">Style</span>
         <span class="label">Fill</span><input class="input" type="color" id="fill" value="#22d3ee" />
         <span class="label">Stroke</span><input class="input" type="color" id="stroke" value="#ffffff" />
@@ -64,14 +68,72 @@
         <button class="btn" id="remove">Delete</button>
         <button class="btn" id="export">Export PNG</button>
         <button class="btn" id="clear">Clear</button>
-      </div>
+      </div> -->
     </div>
 
     <div id="stage-wrap">
       <div id="container"></div>
-      <div class="hint">Click to select • Drag to move • Resize via handles • Delete ⌫ • Duplicate Ctrl/Cmd+D • Arrows to nudge • Shift+Arrows ×10</div>
+      <!-- <div id="properties-drawer" > -->
+
+        <!-- <h2 class="poppins-medium text-12">
+          Properties
+        </h2> -->
+
+        <!-- Transform Section -->
+        <!-- <div style="margin-bottom: 16px;">
+          <h3  class="text-14 poppins-medium prop-heading">Transform</h3>
+          <label class="prop-label">X <input type="number" id="prop-x" class="prop-input"></label>
+          <label class="prop-label">Y <input type="number" id="prop-y" class="prop-input"></label>
+          <label class="prop-label">Width <input type="number" id="prop-width" class="prop-input"></label>
+          <label class="prop-label">Height <input type="number" id="prop-height" class="prop-input"></label>
+          <label class="prop-label">Rotation <input type="number" id="prop-rotation" class="prop-input"></label>
+          <label class="prop-label">SkewX <input type="number" id="prop-skewx" class="prop-input"></label>
+          <label class="prop-label">SkewY <input type="number" id="prop-skewy" class="prop-input"></label>
+        </div> -->
+
+        <!-- Style Section -->
+        <!-- <div style="margin-bottom: 16px;">
+          <h3 class="text-14 poppins-medium prop-heading">Style</h3>
+          <label class="prop-label">Fill <input type="color" id="prop-fill" class="prop-input"></label>
+          <label class="prop-label">Stroke <input type="color" id="prop-stroke" class="prop-input"></label>
+          <label class="prop-label">Stroke Width <input type="number" id="prop-stroke-width" class="prop-input"></label>
+          <label class="prop-label">Opacity <input type="range" min="0" max="1" step="0.05" id="prop-opacity" class="prop-input"></label>
+        </div> -->
+
+        <!-- Text Section (only for text nodes) -->
+        <!-- <div id="text-section" style="margin-bottom:16px;">
+          <h3 class="text-14 poppins-medium prop-heading">Text</h3>
+          <label class="prop-label">Font Size <input type="number" id="prop-fontsize" class="prop-input"></label>
+        </div> -->
+
+      <!-- </div> -->
+    </div>
+    <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" id="context-menu-copy-item">
+      <!-- Copy Icon -->
+      <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16c0 
+      1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/></svg>
+      Copy
+    </div>
+    <div class="context-menu-item" id="context-menu-paste-item">
+      <!-- Paste Icon -->
+      <svg viewBox="0 0 24 24"><path d="M19 2h-4.18C14.4.84 13.3 0 12 
+      0s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 
+      1.1.9 2 2 2h14c1.1 0 2-.9 
+      2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 
+      1 .45 1 1s-.45 1-1 1-1-.45-1-1 
+      .45-1 1-1zm7 18H5V4h2v2h10V4h2v16z"/></svg>
+      Paste
+    </div>
+    <div class="context-menu-item" id="context-menu-delete-item">
+      <!-- Delete Icon -->
+      <svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 
+      1H5v2h14V4h-4.5l-1-1z"/></svg>
+      Delete
     </div>
   </div>
+  </div>
+
 
   <script>
     // --- Stage & layers ---
@@ -80,6 +142,20 @@
     const layer = new Konva.Layer();
     let currentNode = null;
     let isEditingText = false;
+    let copiedNode = null;
+    let contextMenuLocation = { x: 0, y: 0 };
+
+    const DEFAULT_PROPERTIES={
+      'transform':{
+        x: 0, y: 0, width: 100, height: 100, rotation: 0, skewX: 0, skewY: 0, scaleX: 1, scaleY: 1, strokeWidth: 0
+      },
+      'style':{
+        fill: 'red', stroke: 'black', strokeWidth: 0, opacity: 1
+      },
+      'text':{
+        fontSize: 20
+      }
+    }
 
     stage.add(gridLayer);
     stage.add(layer);
@@ -107,6 +183,7 @@
 
     function selectNode(node) {
       if (currentNode &&  currentNode?.type in toolbarIcons) toolbarIcons[currentNode.type].classList.remove('active');
+      removePropertyPanel();
       if (!node) { tr.nodes([]); layer.draw(); return; }
       if(node.type && node.type in toolbarIcons){
         toolbarIcons[node.type].classList.add('active');
@@ -114,7 +191,8 @@
       tr.nodes([node]);
       tr.moveToTop();
       layer.draw();
-      syncUIFromNode(node);
+      createPropertyPanel(node.attrs);
+      // syncUIFromNode(node);
       currentNode = node;
     }
 
@@ -127,7 +205,8 @@
       snap: document.getElementById('snap'),
       grid: document.getElementById('grid'),
       imageUpload: document.getElementById('imageUpload'),
-      blurRadius: document.getElementById('blurRadius')
+      blurRadius: document.getElementById('blurRadius'),
+      contextMenu: document.getElementById('contextMenu')
     };
 
 
@@ -139,6 +218,46 @@
       arrow: document.getElementById("add-arrow"),
       text: document.getElementById("add-text")
     };
+
+    // Update node style 
+    function updateNodeStyle(node, label, value) {
+      const setters = {
+        x: v => node.x(parseFloat(v) || 0),
+        y: v => node.y(parseFloat(v) || 0),
+        width: v => node.width(parseFloat(v) || 0),
+        height: v => node.height(parseFloat(v) || 0),
+        fill: v => node.fill(v),
+        stroke: v => node.stroke(v),
+        strokeWidth: v => node.strokeWidth(parseFloat(v) || 0),
+        cornerRadius: v => node.cornerRadius(parseFloat(v) || 0),
+        opacity: v => node.opacity(parseFloat(v) || 1),
+        shadowColor: v => node.shadowColor(v),
+        shadowBlur: v => node.shadowBlur(parseFloat(v) || 0),
+        shadowOffsetX: v => node.shadowOffsetX(parseFloat(v) || 0),
+        shadowOffsetY: v => node.shadowOffsetY(parseFloat(v) || 0),
+        shadowOpacity: v => node.shadowOpacity(parseFloat(v) || 1),
+        text: v => node.text(v),
+        fontSize: v => node.fontSize(parseInt(v) || 16),
+        fontFamily: v => node.fontFamily(v),
+        fontStyle: v => node.fontStyle(v),
+        align: v => node.align(v),
+        lineHeight: v => node.lineHeight(parseFloat(v) || 1),
+        letterSpacing: v => node.letterSpacing(parseFloat(v) || 0),
+        rotation: v => node.rotation(parseFloat(v) || 0),
+        scaleX: v => node.scaleX(parseFloat(v) || 1),
+        scaleY: v => node.scaleY(parseFloat(v) || 1),
+        skewX: v => node.skewX(parseFloat(v) || 0),
+        skewY: v => node.skewY(parseFloat(v) || 0),
+      };
+
+      if( label in setters ){
+        setters[label](value);
+      }
+
+      node.getLayer().batchDraw();
+    }
+
+
 
     function applyStyle(node){
       if (!node) return;
@@ -166,13 +285,18 @@
     }
 
     function commonShapeProps(){
-      return { fill: ui.fill.value, stroke: ui.stroke.value, strokeWidth: parseFloat(ui.strokeWidth.value)||0, draggable: true, name: 'shape' };
+      return { fill: ui.fill?.value || 'red', stroke: ui.stroke?.value || 'black', strokeWidth: parseFloat(ui.strokeWidth?.value)||0, draggable: true, name: 'shape' };
     }
 
     function attachNodeEvents(node){
       node.on('click', (e)=>{ selectNode(node); e.cancelBubble = true; });
-      node.on('dragmove', ()=>{ if (ui.snap.checked) snapToGrid(node); });
-      node.on('transformend', ()=>{ if (ui.snap.checked) snapToGrid(node); });
+      // node.on('dragmove', ()=>{ if (ui.snap.checked) snapToGrid(node); });
+      // node.on('transformend', ()=>{ if (ui.snap.checked) snapToGrid(node); });
+      node.on('transformend', (e) => {
+        removePropertyPanel();
+        createPropertyPanel(node.attrs);
+      });
+
     }
 
     function snapToGrid(node){
@@ -180,6 +304,63 @@
       const gy = Math.round(node.y()/GRID_SIZE)*GRID_SIZE;
       node.position({x: gx, y: gy});
       layer.batchDraw();
+    }
+
+
+    // Create Properties functions
+    function createTransformSection(container , properties = DEFAULT_PROPERTIES['transform']){
+      const section = document.createElement('div');
+      section.style = 'margin-bottom: 16px;';
+      const heading = document.createElement('h3');
+      heading.classList.add('text-14', 'poppins-medium', 'prop-heading');
+      heading.textContent = 'Transform';
+      section.appendChild(heading);
+
+      // Create input fields for transform properties
+      const createInput = (label, id) => {
+        const labelElement = document.createElement('label');
+        const inputElement = document.createElement('input');
+        labelElement.classList.add('prop-label');
+        inputElement.classList.add('prop-input');
+        inputElement.id = id;
+        inputElement.type = 'number';
+        inputElement.name=label;
+        inputElement.value = properties?.[label] ? parseFloat(properties?.[label]).toFixed(0) : DEFAULT_PROPERTIES['transform'][label];
+
+        inputElement.addEventListener('change', (e) => {
+          updateNodeStyle(tr.nodes()[0], e.target.name, e.target.value);
+        });
+        labelElement.appendChild(document.createTextNode(label));
+        labelElement.appendChild(inputElement);
+        section.appendChild(labelElement);
+      };
+      
+      for(let key in  DEFAULT_PROPERTIES['transform']){
+        createInput(key, `prop-${key}`);
+      }
+
+      container.appendChild(section);
+    }
+
+    // Create Properties Panels
+    function createPropertyPanel(attrs){
+      const stage = document.getElementById("stage-wrap");
+      const propContainer = document.createElement("div");
+      propContainer.id = "properties-drawer";
+      const heading = document.createElement('h2');
+      heading.classList.add("poppins-medium", "text-12");
+      heading.textContent = 'Properties';
+      propContainer.appendChild(heading);
+      createTransformSection(propContainer, attrs);
+
+      stage.appendChild(propContainer);
+    }
+
+    function removePropertyPanel(){
+      const propContainer = document.getElementById("properties-drawer");
+      if (propContainer) {
+        propContainer.remove();
+      }
     }
 
     // --- Add shapes ---
@@ -241,76 +422,95 @@
     // --- Stage events ---
     stage.on('click', (e)=>{ if (e.target === stage) selectNode(null); });
 
+    stage.on('contextmenu', (e) => {
+        e.evt.preventDefault(); 
+        const stageBox = stage.container().getBoundingClientRect();
+        contextMenuLocation = { x:stageBox.left + e.evt.clientX , y: stageBox.top + e.evt.clientY-30 };
+        ui.contextMenu.style.top = contextMenuLocation.y + 'px';
+        ui.contextMenu.style.left = contextMenuLocation.x + 'px';
+        ui.contextMenu.style.display = 'block';
+    });
+
+    window.addEventListener('click', () => {
+      ui.contextMenu.style.display = 'none';
+    });
+
     // --- Toolbar actions ---
-    document.getElementById('remove').onclick = ()=>{
+    document.getElementById('context-menu-delete-item').onclick = ()=>{
       const node = tr.nodes()[0];
+      if(!node) return;
       if (node){ node.destroy(); selectNode(null); }
     };
 
-    document.getElementById('duplicate').onclick = ()=>{
+    document.getElementById('context-menu-copy-item').onclick = ()=>{
       const node = tr.nodes()[0];
       if (!node) return;
-      const clone = node.clone({ x: node.x()+20, y: node.y()+20 });
+      copiedNode = node.clone();
+    };
+
+    document.getElementById('context-menu-paste-item').onclick = ()=>{
+      if (!copiedNode) return;
+      const clone = copiedNode.clone({ x: contextMenuLocation.x - 20 , y: contextMenuLocation.y-20 });
       layer.add(clone); attachNodeEvents(clone); selectNode(clone);
     };
 
-    document.getElementById('bring-front').onclick = ()=>{
-      const node = tr.nodes()[0];
-      if (node){ node.moveToTop(); layer.draw(); }
-    };
-    document.getElementById('send-back').onclick = ()=>{
-      const node = tr.nodes()[0];
-      if (node){ node.moveToBottom(); layer.draw(); }
-    };
+    // document.getElementById('bring-front').onclick = ()=>{
+    //   const node = tr.nodes()[0];
+    //   if (node){ node.moveToTop(); layer.draw(); }
+    // };
+    // document.getElementById('send-back').onclick = ()=>{
+    //   const node = tr.nodes()[0];
+    //   if (node){ node.moveToBottom(); layer.draw(); }
+    // };
 
-    document.getElementById('export').onclick = ()=>{
-      const url = stage.toDataURL({ pixelRatio: 2 });
-      const a = document.createElement('a'); a.href = url; a.download = 'canvas-editor.png'; a.click();
-    };
+    // document.getElementById('export').onclick = ()=>{
+    //   const url = stage.toDataURL({ pixelRatio: 2 });
+    //   const a = document.createElement('a'); a.href = url; a.download = 'canvas-editor.png'; a.click();
+    // };
 
-    document.getElementById('clear').onclick = ()=>{
-      layer.find('.shape').forEach(n => n.destroy());
-      selectNode(null); layer.draw();
-    };
+    // document.getElementById('clear').onclick = ()=>{
+    //   layer.find('.shape').forEach(n => n.destroy());
+    //   selectNode(null); layer.draw();
+    // };
 
     // style inputs apply to selected
-    ui.fill.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
-    ui.stroke.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
-    ui.strokeWidth.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
-    ui.cornerRadius.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    // ui.fill.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    // ui.stroke.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    // ui.strokeWidth.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
+    // ui.cornerRadius.addEventListener('input', ()=> applyStyle(tr.nodes()[0]));
 
     // Image upload Change
-    ui.imageUpload.addEventListener('change', (e)=>{
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt){
-        const img = new Image();
-        img.onload = function(){
-          const konvaImage = new Konva.Image({ x: 100, y: 100, image: img, width: img.width, height: img.height, ...commonShapeProps() });
-          konvaImage.cache();
-          konvaImage.filters([Konva.Filters.Blur]);
-          konvaImage.blurRadius(0); 
-          layer.add(konvaImage); attachNodeEvents(konvaImage); selectNode(konvaImage);
-          ui.imageUpload.value = '';
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
+    // ui.imageUpload.addEventListener('change', (e)=>{
+    //   const file = e.target.files[0];
+    //   if (!file) return;
+    //   const reader = new FileReader();
+    //   reader.onload = function(evt){
+    //     const img = new Image();
+    //     img.onload = function(){
+    //       const konvaImage = new Konva.Image({ x: 100, y: 100, image: img, width: img.width, height: img.height, ...commonShapeProps() });
+    //       konvaImage.cache();
+    //       konvaImage.filters([Konva.Filters.Blur]);
+    //       konvaImage.blurRadius(0); 
+    //       layer.add(konvaImage); attachNodeEvents(konvaImage); selectNode(konvaImage);
+    //       ui.imageUpload.value = '';
+    //     };
+    //     img.src = evt.target.result;
+    //   };
+    //   reader.readAsDataURL(file);
+    // });
 
     // Add Blur Event for Image
-    ui.blurRadius.addEventListener('input', ()=> {
-      const node = tr.nodes()[0];
-      if (node && node.className === 'Image') {
-        node.blurRadius(parseFloat(ui.blurRadius.value) || 0);
-        layer.batchDraw();
-      }
-    });
+    // ui.blurRadius.addEventListener('input', ()=> {
+    //   const node = tr.nodes()[0];
+    //   if (node && node.className === 'Image') {
+    //     node.blurRadius(parseFloat(ui.blurRadius.value) || 0);
+    //     layer.batchDraw();
+    //   }
+    // });
 
 
     // grid toggle
-    ui.grid.addEventListener('change', ()=>{ gridLayer.visible(ui.grid.checked); gridLayer.draw(); });
+    // ui.grid.addEventListener('change', ()=>{ gridLayer.visible(ui.grid.checked); gridLayer.draw(); });
 
     // --- Keyboard shortcuts ---
     window.addEventListener('keydown', (e)=>{

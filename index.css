@@ -1,6 +1,6 @@
     .tool-btn {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       margin: 8px 0;
       background: transparent;
       border: none;
@@ -27,4 +27,121 @@
     /* Active tool highlight */
     .tool-btn.active {
       background: rgba(255,255,255,0.25);
+    }
+
+    #properties-drawer{
+          position: absolute;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          width: 298px;
+          background: #111827; /* dark panel */
+          border-left: 1px solid #1f2937;
+          padding: 16px;
+          box-shadow: -2px 0 10px rgba(0,0,0,0.6);
+          color: #e5e7eb;
+          font-family: Inter, system-ui, sans-serif;
+          display: flex;
+          flex-direction: column;
+          overflow-y: auto;
+    }
+
+    .prop-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 12px;
+      color: #d1d5db;
+      font-family: "Poppins", sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      text-transform: capitalize;
+    }
+    .prop-input {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #f3f4f6;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 6px;
+      height: 30px;
+      /* flex: 1; */
+    }
+    .prop-input:focus {
+      outline: none;
+    }
+
+    .prop-heading{
+      text-transform: uppercase; color:#9ca3af; margin-bottom: 16px;
+    }
+
+
+    /* Scrollbar Styling for Properties Drawer */
+#properties-drawer {
+  scrollbar-width: thin;                           /* Firefox */
+  scrollbar-color: #04162c #0b1220;                /* Thumb + Track */
+}
+
+/* Chrome, Edge, Safari */
+#properties-drawer::-webkit-scrollbar {
+  width: 8px;
+}
+
+#properties-drawer::-webkit-scrollbar-track {
+  background: #0b1220;   /* matches editor background */
+}
+
+#properties-drawer::-webkit-scrollbar-thumb {
+  background-color: #06152e; /* primary blue */
+  border-radius: 6px;
+  border: 2px solid #0b1220; /* space between thumb & track */
+}
+
+#properties-drawer::-webkit-scrollbar-thumb:hover {
+  background-color: #04162c; /* lighter blue on hover */
+}
+
+
+    /* Context menu container */
+    .context-menu {
+      position: absolute;
+      top: 120px;
+      left: 160px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      width: 180px;
+      padding: 6px 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      display: none; /* initially hidden */
+      z-index: 2000;
+    }
+
+    /* Menu items */
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: #e5e7eb;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      font-size: 12px;
+        font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+    }
+
+    .context-menu-item:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .context-menu-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      fill: currentColor;
     }
