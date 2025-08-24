@@ -5,3 +5,16 @@
           <label class="prop-label">Stroke Width <input type="number" id="prop-stroke-width" class="prop-input"></label>
           <label class="prop-label">Opacity <input type="range" min="0" max="1" step="0.05" id="prop-opacity" class="prop-input"></label>
         </div> 
+
+
+        'text':{
+        fontSize: 20, text:"Double Click to Edit", fontStyle:'normal' ,
+        lineHeight:1, letterSpacing:0,shadowColor:"black",
+        shadowBlur:0,shadowOffsetX:0,shadowOffsetY:0,shadowOpacity:1,
+      }
+
+      text -> 2
+      color -> 1
+      number -> 6
+      textAArea -> 1
+
