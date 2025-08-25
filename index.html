@@ -891,12 +891,13 @@
       const node = tr.nodes()[0];
       if (!node) return;
       copiedNode = node.clone();
+      copiedNode.type = node.type;
     };
 
     document.getElementById('context-menu-paste-item').onclick = ()=>{
       if (!copiedNode) return;
       const clone = copiedNode.clone({ x: contextMenuLocation.x - 20 , y: contextMenuLocation.y-20 });
-      layer.add(clone); attachNodeEvents(clone); selectNode(clone);
+      layer.add(clone); clone.type = copiedNode.type; attachNodeEvents(clone); selectNode(clone);
     };
 
     // document.getElementById('bring-front').onclick = ()=>{
