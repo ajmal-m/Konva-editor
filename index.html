@@ -188,6 +188,68 @@
       shadowOpacity: { value: 1, input: "range", min: 0, max: 1, step: 0.1 }
     };
 
+    const imageFiltersConfig = {
+      // Blur
+      blurRadius: { value: 0, type: "number", input: "range", min: 0, max: 100 },
+
+      // Brightness (-1 = dark, +1 = bright)
+      brightness: { value: 0, type: "number", input: "range", min: -1, max: 1 },
+
+      // Contrast (-100% to +100%)
+      contrast: { value: 0, type: "number", input: "range", min: -1, max: 1 },
+
+      // Noise (0 = none, 1 = max noise)
+      noise: { value: 0, type: "number", input: "range", min: 0, max: 1 },
+
+      // Pixelate
+      pixelSize: { value: 1, type: "number", input: "range", min: 1, max: 50 },
+
+      // Emboss
+      embossStrength: { value: 0.5, type: "number", input: "range", min: 0, max: 2 },
+      embossWhiteLevel: { value: 0.5, type: "number", input: "range", min: 0, max: 1 },
+      embossDirection: { value: 0, type: "number", input: "range", min: 0, max: 360 },
+      embossBlend: { value: true, type: "checkbox", input: "checkbox" },
+
+      // Enhance
+      enhance: { value: 0, type: "number", input: "range", min: -1, max: 1 },
+
+      // Grayscale
+      grayscale: { value: false, type: "checkbox", input: "checkbox" },
+
+      // Invert
+      invert: { value: false, type: "checkbox", input: "checkbox" },
+
+      // Sepia
+      sepia: { value: false, type: "checkbox", input: "checkbox" },
+
+      // Solarize
+      solarize: { value: false, type: "checkbox", input: "checkbox" },
+
+      // Threshold
+      threshold: { value: 0.5, type: "number", input: "range", min: 0, max: 1 },
+
+      // HSV
+      hue: { value: 0, type: "number", input: "range", min: -180, max: 180 },
+      saturation: { value: 0, type: "number", input: "range", min: -1, max: 1 },
+      value: { value: 0, type: "number", input: "range", min: -1, max: 1 },
+
+      // RGB
+      red: { value: 0, type: "number", input: "range", min: 0, max: 255 , step:1},
+      green: { value: 0, type: "number", input: "range", min: 0, max: 255 , step:1},
+      blue: { value: 0, type: "number", input: "range", min: 0, max: 255 , step:1},
+
+      // Kaleidoscope
+      kaleidoscopePower: { value: 2, type: "number", input: "range", min: 1, max: 20 },
+      kaleidoscopeAngle: { value: 0, type: "number", input: "range", min: 0, max: 360 },
+
+      // Mask
+      mask: { value: 0, type: "number", input: "range", min: 0, max: 500 },
+
+      // Posterize
+      levels: { value: 0, type: "number", input: "range", min: 0, max: 255 }
+    };
+
+
 
     const DEFAULT_PROPERTIES={
       'transform':{
@@ -202,6 +264,40 @@
       'text':{
         fontSize: 20, text:"Double Click to Edit", fontStyle:'normal' ,
         lineHeight:1, letterSpacing:0,
+      },
+      'filters':{
+        blurRadius: 0,
+        brightness: 0,
+        contrast: 0,
+        noise: 0,
+        pixelSize: 1,
+
+        // embossStrength: 0.5,
+        // embossWhiteLevel: 0.5,
+        // embossDirection: 0,
+        // embossBlend: true,
+
+        enhance: 0,
+        grayscale: false,
+        invert: false,
+        sepia: false,
+        solarize: false,
+
+        // threshold: 0.5,
+
+        hue: 0,
+        saturation: 0,
+        // value: 0,
+
+        // red: 0,
+        // green: 0,
+        // blue: 0,
+
+        // kaleidoscopePower: 2,
+        // kaleidoscopeAngle: 0,
+
+        mask: 0,
+        // levels: 0,
       }
     }
 
@@ -265,7 +361,17 @@
       circle: document.getElementById("add-circle"),
       star: document.getElementById("add-star"),
       arrow: document.getElementById("add-arrow"),
-      text: document.getElementById("add-text")
+      text: document.getElementById("add-text"),
+      image: document.getElementById("imageUpload")
+    };
+
+    const addFilter = (node, filter) => {
+      node.cache();
+      let filters = node.filters() || [];
+      if (!filters.includes(filter)) {
+        filters.push(filter);
+        node.filters(filters);
+      }
     };
 
     // Update node style 
@@ -297,6 +403,132 @@
         scaleY: v => node.scaleY(parseFloat(v) || 1),
         skewX: v => node.skewX(parseFloat(v) || 0),
         skewY: v => node.skewY(parseFloat(v) || 0),
+
+        // Image filters
+         blurRadius: v => {
+          addFilter(node, Konva.Filters.Blur);
+          node.blurRadius(parseFloat(v) || 0);
+        },
+        brightness: v => {
+          addFilter(node, Konva.Filters.Brighten);
+          node.brightness(parseFloat(v) || 0);
+        },
+        contrast: v => {
+          addFilter(node, Konva.Filters.Contrast);
+          node.contrast(parseFloat(v) || 0);
+        },
+        noise: v => {
+          addFilter(node, Konva.Filters.Noise);
+          node.noise(parseFloat(v) || 0);
+        },
+        pixelSize: v => {
+          addFilter(node, Konva.Filters.Pixelate);
+          node.pixelSize(parseFloat(v) || 1);
+        },
+
+        embossStrength: v => {
+          addFilter(node, Konva.Filters.Emboss);
+          node.embossStrength(parseFloat(v) || 0.5);
+        },
+        embossWhiteLevel: v => {
+          addFilter(node, Konva.Filters.Emboss);
+          node.embossWhiteLevel(parseFloat(v) || 0.5);
+        },
+        embossDirection: v => {
+          addFilter(node, Konva.Filters.Emboss);
+          node.embossDirection(parseFloat(v) || 0);
+        },
+        embossBlend: v => {
+          addFilter(node, Konva.Filters.Emboss);
+          node.embossBlend(!!v);
+        },
+
+        enhance: v => {
+          addFilter(node, Konva.Filters.Enhance);
+          node.enhance(parseFloat(v) || 0);
+        },
+        grayscale: v => {
+          if (v) {
+            addFilter(node, Konva.Filters.Grayscale);
+          } else {
+            node.filters((node.filters() || []).filter(f => f !== Konva.Filters.Grayscale));
+          }
+        },
+        invert: v => {
+          if (v) {
+            addFilter(node, Konva.Filters.Invert);
+          } else {
+            node.filters((node.filters() || []).filter(f => f !== Konva.Filters.Invert));
+          }
+        },
+        sepia: v => {
+          if (v) {
+            addFilter(node, Konva.Filters.Sepia);
+          } else {
+            node.filters((node.filters() || []).filter(f => f !== Konva.Filters.Sepia));
+          }
+        },
+        solarize: v => {
+          if (v) {
+            addFilter(node, Konva.Filters.Solarize);
+          } else {
+            node.filters((node.filters() || []).filter(f => f !== Konva.Filters.Solarize));
+          }
+        },
+
+        threshold: v => {
+          addFilter(node, Konva.Filters.Threshold);
+          node.threshold(parseFloat(v) || 0.5);
+        },
+
+        hue: v => {
+          addFilter(node, Konva.Filters.HSV);
+          node.hue(parseFloat(v) || 0);
+        },
+        saturation: v => {
+          addFilter(node, Konva.Filters.HSV);
+          node.saturation(parseFloat(v) || 0);
+        },
+        value: v => {
+          addFilter(node, Konva.Filters.HSV);
+          node.value(parseFloat(v) || 0);
+        },
+
+        red: v => {
+          addFilter(node, Konva.Filters.RGBA);
+          node.red(parseFloat(v) || 0);
+        },
+        green: v => {
+          addFilter(node, Konva.Filters.RGBA);
+          node.green(parseFloat(v) || 0);
+        },
+        blue: v => {
+          addFilter(node, Konva.Filters.RGBA);
+          node.blue(parseFloat(v) || 0);
+        },
+
+        kaleidoscopePower: v => {
+          addFilter(node, Konva.Filters.Kaleidoscope);
+          node.kaleidoscopePower(parseInt(v) || 2);
+        },
+        kaleidoscopeAngle: v => {
+          addFilter(node, Konva.Filters.Kaleidoscope);
+          node.kaleidoscopeAngle(parseFloat(v) || 0);
+        },
+
+        mask: v => {
+            if (parseFloat(v)) {
+              addFilter(node, Konva.Filters.Mask);
+              node.threshold(parseFloat(v) || 0);
+            } else {
+              node.filters((node.filters() || []).filter(f => f !== Konva.Filters.Mask));
+              node.threshold(0);
+            }
+        },
+        levels: v => {
+          addFilter(node, Konva.Filters.RGB);
+          node.levels(parseFloat(v) || 0);
+        }
       };
 
       if( label in setters ){
@@ -450,6 +682,11 @@
         inputElement.classList.add('prop-input');
         inputElement.id = id;
         inputElement.type = textProperties[label]?.input || 'text';
+        if(inputElement.type === 'range'){
+          inputElement.min = textProperties[label]?.min || 0;
+          inputElement.max = textProperties[label]?.max || 1;
+          inputElement.step = textProperties[label]?.step || 0.1;
+        }
         inputElement.name=label;
         inputElement.value = inputElement.type === 'color' ? toHex(properties?.[label] || DEFAULT_PROPERTIES['text'][label]) : properties?.[label] || DEFAULT_PROPERTIES['text'][label];
 
@@ -501,6 +738,51 @@
 
     }
 
+
+    // Create Image Property Panel
+    function createImageFiltersPanel( container, properties = DEFAULT_PROPERTIES['filters']){
+      const section = document.createElement('div');
+      section.style = 'margin-bottom: 16px;';
+      const heading = document.createElement('h3');
+      heading.classList.add('text-14', 'poppins-medium', 'prop-heading');
+      heading.textContent = 'Filters';
+      section.appendChild(heading);
+
+      const createInput = (label, id) => {
+        const labelElement = document.createElement('label');
+        const inputElement = document.createElement('input');
+        labelElement.classList.add('prop-label');
+        inputElement.classList.add('prop-input');
+        inputElement.id = id;
+        inputElement.type = imageFiltersConfig[label]?.input || 'text';
+         if(inputElement.type === 'range'){
+          inputElement.min = imageFiltersConfig[label]?.min || 0;
+          inputElement.max = imageFiltersConfig[label]?.max || 1;
+          inputElement.step = imageFiltersConfig[label]?.step || 0.1;
+        }
+
+        if(inputElement.type === 'checkbox'){
+          inputElement.checked = imageFiltersConfig[label]?.value || false;
+        }else{
+          inputElement.value = imageFiltersConfig[label]?.value || '';
+        }
+        inputElement.name=label;
+
+        inputElement.addEventListener('change', (e) => {
+          updateNodeStyle(tr.nodes()[0], e.target.name,imageFiltersConfig[e.target.name]?.input === "checkbox" ? e.target.checked : e.target.value);
+        });
+        labelElement.appendChild(document.createTextNode(label));
+        labelElement.appendChild(inputElement);
+        section.appendChild(labelElement);
+      };
+
+      for(let key in  DEFAULT_PROPERTIES['filters']){
+        createInput(key, `prop-${key}`);
+      }
+
+      container.appendChild(section);
+    }
+
     // Create Properties Panels
     function createPropertyPanel(attrs, node){
       const stage = document.getElementById("stage-wrap");
@@ -514,7 +796,7 @@
       createStylePropertySection(propContainer, attrs);
 
       if(node.type === 'text') TextPropertiesSection(propContainer, attrs);
-
+      if(node.type === 'image') createImageFiltersPanel(propContainer, attrs);
       stage.appendChild(propContainer);
       propContainer.scrollTop = propertyScrollTop;
     }
@@ -658,6 +940,7 @@
             konvaImage.cache();
             konvaImage.filters([Konva.Filters.Blur]);
             konvaImage.blurRadius(0); 
+            konvaImage.type = 'image';
             layer.add(konvaImage); attachNodeEvents(konvaImage); selectNode(konvaImage);
             ui.imageUpload.value = '';
           };

@@ -1,20 +1,110 @@
-<div style="margin-bottom: 16px;">
-          <h3 class="text-14 poppins-medium prop-heading">Style</h3>
-          <label class="prop-label">Fill <input type="color" id="prop-fill" class="prop-input"></label>
-          <label class="prop-label">Stroke <input type="color" id="prop-stroke" class="prop-input"></label>
-          <label class="prop-label">Stroke Width <input type="number" id="prop-stroke-width" class="prop-input"></label>
-          <label class="prop-label">Opacity <input type="range" min="0" max="1" step="0.05" id="prop-opacity" class="prop-input"></label>
-        </div> 
+import Konva from 'konva';
 
+const stage = new Konva.Stage({
+  container: 'container',
+  width: window.innerWidth,
+  height: window.innerHeight,
+});
 
-        'text':{
-        fontSize: 20, text:"Double Click to Edit", fontStyle:'normal' ,
-        lineHeight:1, letterSpacing:0,shadowColor:"black",
-        shadowBlur:0,shadowOffsetX:0,shadowOffsetY:0,shadowOpacity:1,
-      }
+const layer = new Konva.Layer();
+stage.add(layer);
 
-      text -> 2
-      color -> 1
-      number -> 6
-      textAArea -> 1
+const imageObj = new Image();
+imageObj.onload = () => {
+  const image = new Konva.Image({
+    x: 50,
+    y: 50,
+    image: imageObj,
+    draggable: true,
+  });
 
+  layer.add(image);
+  image.cache();
+
+  // Create controls container
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = '20px';
+  container.style.left = '20px';
+  document.body.appendChild(container);
+
+  // Filter states
+  const filterStates = {
+    blur: false,
+    brightness: false,
+    contrast: false,
+  };
+
+  const filterValues = {
+    blur: 10,
+    brightness: 0.3,
+    contrast: 50,
+  };
+
+  // Create filter controls
+  const createFilterControl = (name, min, max, step, defaultValue) => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '10px';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = name;
+    checkbox.checked = filterStates[name];
+    
+    const label = document.createElement('label');
+    label.htmlFor = name;
+    label.textContent = ` ${name.charAt(0).toUpperCase() + name.slice(1)}: `;
+    
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = min;
+    slider.max = max;
+    slider.step = step;
+    slider.value = defaultValue;
+    slider.style.width = '200px';
+    slider.disabled = !filterStates[name];
+    
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    div.appendChild(slider);
+    
+    checkbox.addEventListener('change', (e) => {
+      filterStates[name] = e.target.checked;
+      slider.disabled = !e.target.checked;
+      updateFilters();
+    });
+    
+    slider.addEventListener('input', (e) => {
+      filterValues[name] = parseFloat(e.target.value);
+      updateFilters();
+    });
+    
+    return div;
+  };
+
+  // Add controls
+  container.appendChild(createFilterControl('blur', 0, 40, 1, filterValues.blur));
+  container.appendChild(createFilterControl('brightness', -1, 1, 0.1, filterValues.brightness));
+  container.appendChild(createFilterControl('contrast', -100, 100, 1, filterValues.contrast));
+
+  function updateFilters() {
+    const activeFilters = [];
+    
+    if (filterStates.blur) {
+      activeFilters.push(Konva.Filters.Blur);
+      image.blurRadius(filterValues.blur);
+    }
+    if (filterStates.brightness) {
+      activeFilters.push(Konva.Filters.Brighten);
+      image.brightness(filterValues.brightness);
+    }
+    if (filterStates.contrast) {
+      activeFilters.push(Konva.Filters.Contrast);
+      image.contrast(filterValues.contrast);
+    }
+    
+    image.filters(activeFilters);
+  }
+};
+imageObj.src = 'https://konvajs.org/assets/lion.png';
+imageObj.crossOrigin = 'anonymous';
