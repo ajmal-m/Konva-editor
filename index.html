@@ -892,12 +892,22 @@
       if (!node) return;
       copiedNode = node.clone();
       copiedNode.type = node.type;
+      if (node.filters() && node.filters().length > 0) {
+        copiedNode.cache();
+        copiedNode.filters(node.filters());
+      }
     };
 
     document.getElementById('context-menu-paste-item').onclick = ()=>{
       if (!copiedNode) return;
       const clone = copiedNode.clone({ x: contextMenuLocation.x - 20 , y: contextMenuLocation.y-20 });
-      layer.add(clone); clone.type = copiedNode.type; attachNodeEvents(clone); selectNode(clone);
+      layer.add(clone); clone.type = copiedNode.type; 
+      if (copiedNode.filters() && copiedNode.filters().length > 0) {
+        clone.cache();
+        clone.filters(copiedNode.filters());
+        clone.getLayer().batchDraw();
+      }
+      attachNodeEvents(clone); selectNode(clone);
     };
 
     // document.getElementById('bring-front').onclick = ()=>{
