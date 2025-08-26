@@ -374,6 +374,39 @@
       }
     };
 
+    function getNodeFilters(node) {
+      return {
+        filters: node.filters().map(f => f.name || f.toString()), // which filters applied
+        values: {
+          blurRadius: node.blurRadius?.(),
+          brightness: node.brightness?.(),
+          contrast: node.contrast?.(),
+          noise: node.noise?.(),
+          pixelSize: node.pixelSize?.(),
+          embossStrength: node.embossStrength?.(),
+          embossWhiteLevel: node.embossWhiteLevel?.(),
+          embossDirection: node.embossDirection?.(),
+          embossBlend: node.embossBlend?.(),
+          enhance: node.enhance?.(),
+          grayscale: node.filters().includes(Konva.Filters.Grayscale) ,
+          invert: node.filters().includes(Konva.Filters.Invert),
+          sepia: node.filters().includes(Konva.Filters.Sepia),
+          solarize: node.filters().includes(Konva.Filters.Solarize),
+          threshold: node.threshold?.(),
+          hue: node.hue?.(),
+          saturation: node.saturation?.(),
+          value: node.value?.(),
+          red: node.red?.(),
+          green: node.green?.(),
+          blue: node.blue?.(),
+          kaleidoscopePower: node.kaleidoscopePower?.(),
+          kaleidoscopeAngle: node.kaleidoscopeAngle?.(),
+          levels: node.levels?.(),
+        }
+      };
+    }
+
+
     // Update node style 
     function updateNodeStyle(node, label, value) {
       const setters = {
@@ -740,7 +773,7 @@
 
 
     // Create Image Property Panel
-    function createImageFiltersPanel( container, properties = DEFAULT_PROPERTIES['filters']){
+    function createImageFiltersPanel( container, properties = DEFAULT_PROPERTIES['filters'], node){
       const section = document.createElement('div');
       section.style = 'margin-bottom: 16px;';
       const heading = document.createElement('h3');
@@ -760,11 +793,11 @@
           inputElement.max = imageFiltersConfig[label]?.max || 1;
           inputElement.step = imageFiltersConfig[label]?.step || 0.1;
         }
-
+        const {values} = getNodeFilters(node);
         if(inputElement.type === 'checkbox'){
-          inputElement.checked = imageFiltersConfig[label]?.value || false;
+          inputElement.checked = values[label] || imageFiltersConfig[label]?.value;
         }else{
-          inputElement.value = imageFiltersConfig[label]?.value || '';
+          inputElement.value = values[label] || imageFiltersConfig[label]?.value;
         }
         inputElement.name=label;
 
@@ -796,7 +829,7 @@
       createStylePropertySection(propContainer, attrs);
 
       if(node.type === 'text') TextPropertiesSection(propContainer, attrs);
-      if(node.type === 'image') createImageFiltersPanel(propContainer, attrs);
+      if(node.type === 'image') createImageFiltersPanel(propContainer, attrs, node);
       stage.appendChild(propContainer);
       propContainer.scrollTop = propertyScrollTop;
     }
