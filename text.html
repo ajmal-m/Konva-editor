@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FONT STYLE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script" rel="stylesheet">
+    <style>
+        h1 {
+            font-family: 'Albert Sans';
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1 id="header-preview">Hello World</h1>
+        <button onclick="updateFont()">ADD FONT</button>
+        <button onclick="removeFont()">Remove Font</button>
+        <ul id="font-list">
+        </ul>
+        <div style="display: flex; gap: 10px;">
+            <button id="prev-page" onclick="prevPage()">Previous</button>
+            <button id="next-page" onclick="nextPage()">Next</button>
+        </div>
+    </div>
+    <script>
+        let page = 1;
+        const updateFont = () => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Albert+Sans&display=swap';
+            document.head.appendChild(link);
+        }
+
+       async function getFonts() {
+            const res = await fetch(
+                "https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyDCjjND2LnWNPHXy-evzFtOqX54A8HN4GI"
+            );
+            const data = await res.json();
+            return data.items.map(font => font.family);
+
+        }
+
+        function paginate(array, pageSize, pageNumber) {
+            return array.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+        }
+
+        const nextPage = async () => {
+            const fonts = await getFonts();
+            const size = 20;  // fonts per page
+            const totalPages = Math.ceil(fonts.length / size);
+
+            if (page < totalPages) {
+                page++;
+                setFontsToDom(page);
+            }
+        }
+
+        const prevPage = () => {
+            if (page > 1) {
+                page--;
+                setFontsToDom(page);
+            }
+        }
+
+
+        const setFontsToDom = async (page=1, size=20) => {
+            const fonts = await getFonts();
+
+            const currentPageFonts = paginate(fonts, size, page);
+            const fontList = document.getElementById('font-list');
+            fontList.innerHTML = '';
+
+            document.fonts.ready.then(() => {
+                currentPageFonts.forEach(font => {
+                    // List of available fonts
+                    const li = document.createElement('li');
+                    li.textContent = font;
+                    fontList.appendChild(li);
+
+                    // Add the font to the document
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, '+')}&display=swap`;
+                    document.head.appendChild(link);
+                    li.style.fontFamily = font;
+                    li.addEventListener('click', () => {
+                        document.getElementById("header-preview").style.fontFamily = font;
+                    });
+                });
+            });
+        };
+
+        setFontsToDom();
+
+        const removeFont = () => {
+            const links = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+            links.forEach(link => link.remove());
+        }
+        // document.fonts.ready.then(() => {
+        //     const text = new Konva.Text({ x: 120, y: 260, text: 'Double-click to edit', fontSize: 22, fontFamily: "Dancing Script", ...commonShapeProps() });
+        //     text.on('dblclick dbltap', () => { enableTextEdit(text); });
+        //     layer.add(text); text.type='text'; attachNodeEvents(text); selectNode(text);
+        // });
+    </script>
+</body>
+</html>

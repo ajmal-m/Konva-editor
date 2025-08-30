@@ -1,2 +1,0 @@
-'Blur', 'Brighten', 'Contrast', 'Noise', 'Pixelate', 'Enhance', 
-'Grayscale', 'Sepia', 'Invert', 'Solarize', 'HSV', 'Mask'

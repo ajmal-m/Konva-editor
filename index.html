@@ -27,6 +27,12 @@
   </style>
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="font.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app">
@@ -351,7 +357,9 @@
       imageUpload: document.getElementById('imageUpload'),
       blurRadius: document.getElementById('blurRadius'),
       contextMenu: document.getElementById('contextMenu'),
-      propertyPanel:document.getElementById('properties-drawer')
+      propertyPanel:document.getElementById('properties-drawer'),
+      fontDropDown:document.getElementById('drop_down_list'),
+      fontDropDownButton:document.getElementById('font-dropdown-button')
     };
 
 
@@ -571,6 +579,55 @@
       node.getLayer().batchDraw();
     }
 
+    // Get full google fonts
+    async function getFonts() {
+      const res = await fetch(
+          "https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyDCjjND2LnWNPHXy-evzFtOqX54A8HN4GI"
+      );
+      const data = await res.json();
+      return data.items.map(font => font.family);
+
+    }
+
+    function paginate(array, pageSize, pageNumber) {
+      return array.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+    }
+
+
+    function setFontsToDom(ul, arr){
+      arr.forEach((item, index) => {
+        const list = document.createElement('li');
+        list.textContent= item ;
+        list.style.marginTop='4px';
+        list.style.textAlign='left';
+        list.style.cursor="pointer";
+        list.style.padding='6px 12px';
+        list.style.fontFamily=item;
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${item.replace(/ /g, '+')}&display=swap`;
+        document.head.appendChild(link);
+
+
+        list.addEventListener("mouseover", () => {
+          list.style.backgroundColor = "#374151";
+        });
+
+        list.addEventListener("mouseout", () => {
+          list.style.backgroundColor = "";
+        });
+
+        list.addEventListener("click", (e) => {
+          e.stopImmediatePropagation();
+          document.getElementById('selected_font_name').innerHTML = item;
+          updateNodeStyle(tr.nodes()[0], 'fontFamily', item);
+        });
+
+        ul.appendChild(list);
+      });
+    }
+
 
 
     function applyStyle(node){
@@ -700,13 +757,77 @@
 
 
     // Create Text properties section
-    function TextPropertiesSection(container, properties = DEFAULT_PROPERTIES['text']){
+    async function TextPropertiesSection(container, properties = DEFAULT_PROPERTIES['text']){
       const section = document.createElement('div');
       section.style = 'margin-bottom: 16px;';
       const heading = document.createElement('h3');
       heading.classList.add('text-14', 'poppins-medium', 'prop-heading');
       heading.textContent = 'Text';
       section.appendChild(heading);
+
+      let page=1;
+      let size=20;
+      let getAllFonts = await getFonts();
+      let loadingFont=false;
+
+      const div = document.createElement('div');
+      const labelElement = document.createElement('label');
+      labelElement.classList.add('prop-label');
+      const dropDownButton = document.createElement('button');
+      dropDownButton.id="font-dropdown-button";
+      dropDownButton.addEventListener('click', (e) => {
+        e.stopImmediatePropagation();
+        dropDown.style.display = dropDown.style.display === 'block' ? 'none' : 'block';
+      });
+      dropDownButton.classList.add('prop-input', 'prop-label');
+      dropDownButton.style.position='relative';
+      dropDownButton.style.width = '160px';
+      const span = document.createElement('span');
+      span.classList.add('material-symbols-outlined');
+      span.id="selected_font_name"
+      span.innerHTML = properties.fontFamily || 'Select Font';
+      dropDownButton.appendChild(span);
+
+      const dropDown = document.createElement('div');
+      dropDown.id="drop_down_list";
+      dropDown.style.position='absolute';
+      dropDown.style.borderRadius='4px';
+      dropDown.style.top='115%';
+      dropDown.style.left='-94px';
+      dropDown.style.right='0';
+      dropDown.style.backgroundColor = '#1f2937';
+      dropDown.style.border = '1px solid #374151';
+      dropDown.style.zIndex = '1000';
+      dropDown.style.maxHeight = '250px';
+      dropDown.style.width='253px';
+      dropDown.style.overflowY = 'auto';
+      dropDown.style.display = 'none';
+
+      const ul = document.createElement('ul');
+      ul.style.listStyle='none';
+      ul.style.padding='0';
+
+      ul.style.margin='0';
+      setFontsToDom(ul, paginate(getAllFonts, size, page));
+
+      dropDown.addEventListener('scrollend',async () => {
+        if(loadingFont) return;
+        loadingFont = true;
+        page++;
+        await setFontsToDom(ul, paginate(getAllFonts, size, page));
+        loadingFont = false;
+      });
+
+      dropDown.appendChild(ul);
+
+      dropDownButton.appendChild(dropDown);
+
+      labelElement.appendChild(document.createTextNode('Font Family'));
+      labelElement.appendChild(dropDownButton);
+
+      div.appendChild(labelElement);
+
+      section.appendChild(div);
 
       const createInput = (label, id) => {
         const labelElement = document.createElement('label');
@@ -722,9 +843,12 @@
         }
         inputElement.name=label;
         inputElement.value = inputElement.type === 'color' ? toHex(properties?.[label] || DEFAULT_PROPERTIES['text'][label]) : properties?.[label] || DEFAULT_PROPERTIES['text'][label];
-
         inputElement.addEventListener('input', (e) => {
+          e.stopImmediatePropagation();
           updateNodeStyle(tr.nodes()[0], e.target.name, e.target.value);
+        });
+        inputElement.addEventListener('change', (e) => {
+          e.stopImmediatePropagation();
         });
         labelElement.appendChild(document.createTextNode(label));
         labelElement.appendChild(inputElement);
@@ -863,9 +987,11 @@
     };
 
     document.getElementById('add-text').onclick = ()=>{
-      const text = new Konva.Text({ x: 120, y: 260, text: 'Double-click to edit', fontSize: 22, fontFamily: 'Inter, system-ui, sans-serif', ...commonShapeProps() });
-      text.on('dblclick dbltap', () => { enableTextEdit(text); });
-      layer.add(text); text.type='text'; attachNodeEvents(text); selectNode(text);
+      document.fonts.ready.then(() => {
+        const text = new Konva.Text({ x: 120, y: 260, text: 'Double-click to edit', fontSize: 22, fontFamily: "Dancing Script", ...commonShapeProps() });
+        text.on('dblclick dbltap', () => { enableTextEdit(text); });
+        layer.add(text); text.type='text'; attachNodeEvents(text); selectNode(text);
+      });
     };
 
     function enableTextEdit(textNode){
@@ -911,6 +1037,7 @@
 
     window.addEventListener('click', () => {
       ui.contextMenu.style.display = 'none';
+      // ui.fontDropDown.style.display = 'none';
     });
 
     // --- Toolbar actions ---
