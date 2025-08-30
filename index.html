@@ -37,30 +37,40 @@
 <body>
   <div class="app">
     <div class="toolbar">
-      <div class="group">
-        <button class="tool-btn"  id="add-rect" title="Rectangle" data-tool="rect">
-          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="12"/></svg>
-        </button>
-        <button class="tool-btn" id="add-circle" title="Circle" data-tool="circle">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>
-        </button>
-        <button class="tool-btn" title="Star" data-tool="star"  id="add-star">
-          <svg viewBox="0 0 24 24">
-            <polygon points="12,3 15,10 22,10 17,14 19,21 12,17 5,21 7,14 2,10 9,10"/>
-          </svg>
-        </button>
-        <button class="tool-btn" title="Arrow" data-tool="arrow" id="add-arrow">
-          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="15,8 19,12 15,16"/></svg>
-        </button>
-        <button class="tool-btn" title="Text" data-tool="text" id="add-text">
-          <svg viewBox="0 0 24 24"><path d="M4 6h16M12 6v12"/></svg>
-        </button>
-        <button class="tool-btn" title="Image" data-tool="image" id="imageUpload">
-          <svg viewBox="0 0 24 24">
-            <rect x="3" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="white" stroke-width="2"/>
-            <polyline points="6,16 10,12 14,16 18,11 21,16" fill="none" stroke="white" stroke-width="2"/>
-          </svg>
-        </button>
+      <div style="width: 100%; display: flex;justify-content: space-between;align-items: center;">
+        <div class="group">
+          <button class="tool-btn"  id="add-rect" title="Rectangle" data-tool="rect">
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="12"/></svg>
+          </button>
+          <button class="tool-btn" id="add-circle" title="Circle" data-tool="circle">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>
+          </button>
+          <button class="tool-btn" title="Star" data-tool="star"  id="add-star">
+            <svg viewBox="0 0 24 24">
+              <polygon points="12,3 15,10 22,10 17,14 19,21 12,17 5,21 7,14 2,10 9,10"/>
+            </svg>
+          </button>
+          <button class="tool-btn" title="Arrow" data-tool="arrow" id="add-arrow">
+            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="15,8 19,12 15,16"/></svg>
+          </button>
+          <button class="tool-btn" title="Text" data-tool="text" id="add-text">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M12 6v12"/></svg>
+          </button>
+          <button class="tool-btn" title="Image" data-tool="image" id="imageUpload">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="5" width="18" height="14" rx="2" ry="2" fill="none" stroke="white" stroke-width="2"/>
+              <polyline points="6,16 10,12 14,16 18,11 21,16" fill="none" stroke="white" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
+        <div>
+          <button 
+            id="export" class="poppins-medium" 
+            style="background-color: #315ce5; padding: 6px 12px; border: none; border-radius: 4px; color: white;cursor: pointer;"
+          >
+            Export Image
+          </button>
+        </div>
       </div>
       <!-- <div class="group">
         <span class="label">Style</span>
@@ -972,12 +982,12 @@
     };
 
     document.getElementById('add-circle').onclick = ()=>{
-      const circle = new Konva.Circle({ x: 280, y: 160, radius: 60, ...commonShapeProps() });
+      const circle = new Konva.Circle({ x: 160, y: 160, radius: 60, ...commonShapeProps() });
       layer.add(circle); circle.type='circle'; attachNodeEvents(circle); selectNode(circle);
     };
 
     document.getElementById('add-star').onclick = ()=>{
-      const star = new Konva.Star({ x: 420, y: 160, numPoints: 5, innerRadius: 30, outerRadius: 60, ...commonShapeProps() });
+      const star = new Konva.Star({ x: 80, y: 80, numPoints: 5, innerRadius: 30, outerRadius: 60, ...commonShapeProps() });
       layer.add(star); star.type='star'; attachNodeEvents(star); selectNode(star);
     };
 
@@ -1079,10 +1089,10 @@
     //   if (node){ node.moveToBottom(); layer.draw(); }
     // };
 
-    // document.getElementById('export').onclick = ()=>{
-    //   const url = stage.toDataURL({ pixelRatio: 2 });
-    //   const a = document.createElement('a'); a.href = url; a.download = 'canvas-editor.png'; a.click();
-    // };
+    document.getElementById('export').onclick = ()=>{
+      const url = stage.toDataURL({ pixelRatio: 2 });
+      const a = document.createElement('a'); a.href = url; a.download = 'canvas-editor.png'; a.click();
+    };
 
     // document.getElementById('clear').onclick = ()=>{
     //   layer.find('.shape').forEach(n => n.destroy());
@@ -1172,8 +1182,8 @@
 
     // --- Resize handling ---
     function fitStage(){
-      const h = window.innerHeight - 70;
-      stage.size({ width: window.innerWidth, height: h });
+      const h = 600;
+      stage.size({ width: 300, height: h });
       drawGrid();
     }
     window.addEventListener('resize', fitStage);
